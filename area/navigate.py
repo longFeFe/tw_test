@@ -71,15 +71,53 @@ class Navigate:
 
 
     # 找出A->B之间路线 限制最大站数
-    def find_ways_by_max_staions(self, src_station, dst_station, max_staions):
-        ways = self.find_all_ways(src_station, dst_station)
-        result = 0
-        if len(ways) == 0:
-            return -1
-        for way in ways:
-            if len(way) - 1 <= max_staions:
-                result += 1
-        return result
+    # def find_ways_by_max_staions(self, src_station, dst_station, max_staions):
+    #     ways = self.find_all_ways(src_station, dst_station)
+    #     result = 0
+    #     if len(ways) == 0:
+    #         return -1
+    #     for way in ways:
+    #         if len(way) - 1 <= max_staions:
+    #             result += 1
+    #     return result
+    # def find_ways_by_max_staions(self, src_station, dst_station, max_staions):
+    #     routes = 0
+    #     # Check if start and end nodes exists in route table
+    #     if src_station not in self.stations or dst_station not in self.stations:
+    #         return -1
+        
+
+     
+
+    #     src_way = self.route_table[src_station]
+
+    #     while src_way:
+    #         distance += stop.distance
+    #         # If distance is under max, keep traversing
+    #         # even if match is found until distance is > max
+
+    #         if distance <= max_distance:
+    #             if stop.destination == town_end:
+    #                 routes += 1
+    #                 routes += self.find_num_routes_within(stop.destination, town_end, distance, max_distance)
+    #                 stop = stop.next_stop
+    #                 continue
+
+    #             else:
+    #                 routes += self.find_num_routes_within(stop.destination, town_end, distance, max_distance)
+    #                 distance -= stop.distance  # Decrement distance as we backtrack
+
+
+    #         else:
+    #             distance -= stop.distance
+
+    #         stop = stop.next_stop
+
+
+    #     else:
+    #         return "NO SUCH ROUTE"
+
+    #     return routes
 
      # 找出A->B之间路线 限制最大长度
     def find_ways_by_max_distance(self, src_station, dst_station, max_distance):
@@ -88,9 +126,6 @@ class Navigate:
         if len(ways) == 0:
             return -1
         for way in ways:
-            for w in way:
-                print w.name
-            print '\t'
             if self.distance_stations(way) <= max_distance:
                 result += 1
         return result
@@ -123,9 +158,9 @@ class Navigate:
                 src_way = src_way.next
                 l = deep[:]
                 l.append(dst_station)
-                for w in l:
-                    print w.name
-                print '\t'
+                # for w in l:
+                #     print w.name
+                # print '\t'
                 result.append(l)
                 deep.pop()
                 continue
@@ -134,12 +169,12 @@ class Navigate:
                 self.__dfs_find_all_ways(src_way.dst, dst_station, deep, result)
             # 开始下一条路
             src_way = src_way.next
-            if len(deep) > 0: # 下次循环会重新压入
-                deep.pop()
+            #if len(deep) > 0: # 下次循环会重新压入
+            deep.pop()
             #print src_way.src.name
         src_station.visited = False
-        if len(deep) > 0:
-            deep.pop()
+        # if len(deep) > 0:
+        #     deep.pop()
         return result
 
 

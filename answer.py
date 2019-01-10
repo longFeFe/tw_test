@@ -34,9 +34,6 @@ def find_way_by_station_num( src, dst, num):
     result = 0
     for way in ways:
         #print len(way)
-        for w in way:
-            print w.name
-        print '\t'
         if len(way) - 1 == num:
             result += 1
     return result
