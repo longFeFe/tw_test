@@ -42,13 +42,15 @@ def __parse_file(f):
     global na
     line = f.readline()
     while line:
+        if line.strip() == '':
+            line = f.readline()
+            continue
+        line = line.replace('\r', '')
         line = line.replace('\n', '')
         line = line.replace(' ', '')
-        items = line.split(':')
-        if len(items) <= 0:
-            return False
-        
-        if len(items) == 2:
+        # 初始化区域名字
+        if ':' in line:
+            items = line.split(':')
             if na == None: # 已经初始化过  且新节点不属于此区域
                 na = navigate.Navigate(items[0])
             elif items[0] == na.area:
@@ -57,7 +59,8 @@ def __parse_file(f):
         if na == None:
             return False
         str_ways = items[0].split(',')
-
+        if len(str_ways) < 3:
+            return False
         # FIXME: data check
         for str_w in str_ways:
             src = station.Station(str_w[0])
@@ -65,7 +68,6 @@ def __parse_file(f):
             dist = int(str_w[2])
             na.init_station_by_ways(src, way.Way(src, dst, dist))
         line = f.readline()
-        print line
     return True
 
 
