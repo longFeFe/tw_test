@@ -6,47 +6,53 @@ class Navigate:
     def __init__(self, name):
         self.area = name
         self.stations = {}
-    # init stations by file
-    def init_route_by_file(self, file):
-        pass
+    
     # init stations by way
-    def init_route_by_station(self, station, ways):
+    def init_station_by_ways(self, station, ways):
+        '''[summary]
+            初始化station表
+        Arguments:
+            station {[type]} -- [description]
+            ways {} -- [description]
+        
+        Raises:
+            Exception -- [description]
+        
+        Returns:
+            [type] -- [description]
+        '''
+        # print ways.src.name + ' to ' + ways.dst.name
         if not isinstance(station, Station) or not isinstance(ways, Way):
             raise Exception("Invalid parameter", None)
-        self.add_route(station, ways)
+        self.__add_route(station, ways)
         return True
 
+
     # 取station.的ways 拼接到stations[station.name].ways后 ? 区域搜索
-    def add_route(self, station, ways):
+    def __add_route(self, station, ways):
         # name = self.area + '.' + way.src
         if station not in self.stations:
             self.stations[station] = ways
             return
-        return
-        
-    # 只能解析固定格式的文件内容
-    def __parse_file(self, f):
-        with open(f, 'r') as content_file:
-            data = content_file.read()
+        current_ways = self.stations[station]
+        while current_ways.next:
+            current_ways = current_ways.next
+        current_ways.set_next(ways)
+
+
     
-    # 计算相邻节点之间的距离
-    # return value:
-    #  <= 0 无法联通
-    #  > 0 距离
-    def __distance_between_adjacent(self, dst, src_way):
-        #print src_way.dst.name + '->' + dst.name
-        if src_way.dst == dst:
-            return src_way.distance
-        if src_way.next:
-            return self.__distance_between_adjacent(dst, src_way.next)
-        return -1
-    
-    # 计算stations之间的长度
-    # 按预定路线行驶  BFS
-    # return value:
-    #  <= 0 无法联通
-    #  > 0 距离
     def distance_stations(self, stations):
+        '''[summary]
+            计算制定路线的距离
+            bug: 站点之间必须相邻
+        Arguments:
+            stations {[]} -- [description]
+        
+        Returns:
+            [type] -- int
+            -1 无法联通
+        '''
+
         distance = 0
         index = 0
         for station in stations:
@@ -70,85 +76,117 @@ class Navigate:
         return distance
 
 
-    # 找出A->B之间路线 限制最大站数
-    # def find_ways_by_max_staions(self, src_station, dst_station, max_staions):
-    #     ways = self.find_all_ways(src_station, dst_station)
-    #     result = 0
-    #     if len(ways) == 0:
-    #         return -1
-    #     for way in ways:
-    #         if len(way) - 1 <= max_staions:
-    #             result += 1
-    #     return result
-    # def find_ways_by_max_staions(self, src_station, dst_station, max_staions):
-    #     routes = 0
-    #     # Check if start and end nodes exists in route table
-    #     if src_station not in self.stations or dst_station not in self.stations:
-    #         return -1
-        
-
-     
-
-    #     src_way = self.route_table[src_station]
-
-    #     while src_way:
-    #         distance += stop.distance
-    #         # If distance is under max, keep traversing
-    #         # even if match is found until distance is > max
-
-    #         if distance <= max_distance:
-    #             if stop.destination == town_end:
-    #                 routes += 1
-    #                 routes += self.find_num_routes_within(stop.destination, town_end, distance, max_distance)
-    #                 stop = stop.next_stop
-    #                 continue
-
-    #             else:
-    #                 routes += self.find_num_routes_within(stop.destination, town_end, distance, max_distance)
-    #                 distance -= stop.distance  # Decrement distance as we backtrack
-
-
-    #         else:
-    #             distance -= stop.distance
-
-    #         stop = stop.next_stop
-
-
-    #     else:
-    #         return "NO SUCH ROUTE"
-
-    #     return routes
-
-     # 找出A->B之间路线 限制最大长度
     def find_ways_by_max_distance(self, src_station, dst_station, max_distance):
-        ways = self.find_all_ways(src_station, dst_station)
-        result = 0
-        if len(ways) == 0:
-            return -1
-        for way in ways:
-            if self.distance_stations(way) <= max_distance:
-                result += 1
-        return result
+        '''[summary]
+            最大距离限制查找所有路径
+        Arguments:
+            src_station {[type]} -- [起点]
+            dst_station {[type]} -- [终点]
+            current_distance {[type]} -- []
+            max_distance {[type]} -- [最大距离]
+            deep {[type]} -- [description]
+        
+        Returns:
+            [type] -- [[],[]]
+        '''
 
-     # 找出src_station->dst_station之间的所有路线
+        deep = []
+        if src_station in self.stations and dst_station in self.stations:
+            result = self.__dfs_find_all_ways_by_max_distance(src_station, dst_station, 0, max_distance, deep)
+            # for r in result:
+            #     for w in r:
+            #         print w.name
+            #     print '====='
+            return result
+        return []
+
+    def find_ways_by_max_station_num(self, src_station, dst_station, max_num):
+        '''[summary]
+            最大站点数限制查找所有路径
+        Arguments:
+            src_station {[type]} -- [起点]
+            dst_station {[type]} -- [终点]
+            max_num {[type]} -- [路径中最大站点数 包含起点终点]
+            deep {[type]} -- []
+        
+        Returns:
+            [type] -- [[],[]]
+        '''
+
+        deep = []
+        if src_station in self.stations and dst_station in self.stations:
+            result = self.__dfs_find_all_ways_by_max_staion_num(src_station, dst_station, max_num, deep)
+            # for r in result:
+            #     for w in r:
+            #         print w.name
+            #     print '====='
+            return result
+        return []
+
+
     def find_all_ways(self, src_station, dst_station):
+        '''[summary]
+            找出src_station->dst_station之间的所有路线
+            路径中不会有重复站点  如C->D->E->C->D->C路线不会被统计
+        Arguments:
+            src_station {[type]} -- [起点]
+            dst_station {[type]} -- [终点]
+        
+        Returns:
+            [type] -- [[],[]]
+        '''
+
         if src_station not in self.stations or dst_station not in self.stations:
             return []
         deep = []
-        result = []
-        list_way = self.__dfs_find_all_ways(src_station, dst_station, deep, result)
+        list_way = self.__dfs_find_all_ways_stand(src_station, dst_station, deep)
+        # for w in list_way:
+        #     for s in w:
+        #         print s.name
+        #     print '======'
+
         return list_way
+
+
+
+    def __distance_between_adjacent(self, dst, src_way):
+        '''[summary]
+            计算节点距离
+        Arguments:
+            dst {[type]} -- [description]
+            src_way {[type]} -- [description]
+        
+        Returns:
+            [type] -- [description]
+        '''
+
+        if src_way.dst == dst:
+            return src_way.distance
+        if src_way.next:
+            return self.__distance_between_adjacent(dst, src_way.next)
+        return -1
 
 
 
 
 
     # 找出src_station->dst_station之间的所有路线
-    # DFS
-    def __dfs_find_all_ways(self, src_station, dst_station, deep, result):
+    # 标准DFS
+    def __dfs_find_all_ways_stand(self, src_station, dst_station, deep):
+        '''[summary]
+            标准DFS方法遍历A->B所有路径
+        Arguments:
+            src_station {[type]} -- [起点]
+            dst_station {[type]} -- [终点]
+            deep {[type]} -- [description]
+        
+        Returns:
+            [type] -- [[],[]]]
+        '''
+
         src_station.visited = True
         src_way = self.stations[src_station]
-        
+        result = []
         
         while src_way:
             deep.append(src_way.src)
@@ -166,15 +204,99 @@ class Navigate:
                 continue
                 
             if not src_way.dst.visited:
-                self.__dfs_find_all_ways(src_way.dst, dst_station, deep, result)
+                ways = self.__dfs_find_all_ways_stand(src_way.dst, dst_station, deep)
+                result += ways
             # 开始下一条路
             src_way = src_way.next
-            #if len(deep) > 0: # 下次循环会重新压入
             deep.pop()
             #print src_way.src.name
         src_station.visited = False
-        # if len(deep) > 0:
-        #     deep.pop()
+        return result
+
+
+
+    def __dfs_find_all_ways_by_max_distance(self, src_station, dst_station, current_distance, max_distance, deep):
+        '''[summary]
+            最大距离限制查找所有路径
+        Arguments:
+            src_station {[type]} -- [起点]
+            dst_station {[type]} -- [终点]
+            current_distance {[type]} -- []
+            max_distance {[type]} -- [最大距离]
+            deep {[type]} -- [description]
+        
+        Returns:
+            [type] -- [[],[]]
+        '''
+
+        src_way = self.stations[src_station]
+        result = []
+        deep.append(src_way.src)
+        while src_way:
+            
+            
+            current_distance += src_way.distance
+            if current_distance <= max_distance:
+                if src_way.dst == dst_station:
+                    
+                    l = deep[:]
+                    l.append(dst_station)
+                    result.append(l)
+                    # 此src的 出度 找到 dst 再继续沿用此出度路径 深度遍历
+                    ways = self.__dfs_find_all_ways_by_max_distance(src_way.dst, dst_station, current_distance, max_distance, deep)
+                    result += ways
+                    # 下一条出度
+                    src_way = src_way.next
+                    continue
+            
+                ways = self.__dfs_find_all_ways_by_max_distance(src_way.dst, dst_station, current_distance, max_distance, deep)
+                result += ways
+            
+            # 超出限制 
+            # 此出度无法到达目的地 需要减去此出度的长度
+            current_distance -= src_way.distance
+            # 开始下一条路
+            src_way = src_way.next
+        # 此站的所有出度已遍历完毕 需要pop出此站
+        deep.pop()
+        return result
+    
+
+    def __dfs_find_all_ways_by_max_staion_num(self, src_station, dst_station, max_num, deep):
+        '''[summary]
+            最大站点数限制查找所有路径
+        Arguments:
+            src_station {[type]} -- [起点]
+            dst_station {[type]} -- [终点]
+            max_num {[type]} -- [路径中最大站点数 包含起点终点]
+            deep {[type]} -- []
+        
+        Returns:
+            [type] -- [[],[]]
+        '''
+        src_way = self.stations[src_station]
+        result = []
+        deep.append(src_way.src)
+        while src_way:
+            # + dst
+            if len(deep) + 1 <= max_num:
+                if src_way.dst == dst_station:
+                    l = deep[:]
+                    l.append(dst_station)
+                    result.append(l)
+                    # 此src的 出度 找到 dst 再继续沿用此出度路径 深度遍历
+                    ways = self.__dfs_find_all_ways_by_max_staion_num(src_way.dst, dst_station, max_num, deep)
+                    result += ways
+                    # 下一条出度
+                    src_way = src_way.next
+                    continue
+            
+                ways = self.__dfs_find_all_ways_by_max_staion_num(src_way.dst, dst_station, max_num, deep)
+                result += ways
+            # 开始下一条路
+            src_way = src_way.next
+        # 此站的所有出度已遍历完毕 需要pop出此站
+        deep.pop()
         return result
 
 
