@@ -49,9 +49,10 @@ def __parse_file(f):
             return False
         
         if len(items) == 2:
-            if na: # 已经初始化过
-                return False
-            na = navigate.Navigate(items[0])
+            if na == None: # 已经初始化过  且新节点不属于此区域
+                na = navigate.Navigate(items[0])
+            elif items[0] == na.area:
+                pass
             items.pop(0)
         if na == None:
             return False
@@ -64,6 +65,7 @@ def __parse_file(f):
             dist = int(str_w[2])
             na.init_station_by_ways(src, way.Way(src, dst, dist))
         line = f.readline()
+        print line
     return True
 
 
